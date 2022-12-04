@@ -64,10 +64,7 @@ class Day1Test {
                           Stream.of(elves.get(0).add(parseInt(s))), elves.stream().skip(1))
                       .toList();
                 },
-            (prev, next) -> {
-              System.out.println("merge " + prev + " and  " + next);
-              return concat(prev.stream(), next.stream()).toList();
-            })
+            (prev, next) -> concat(prev.stream(), next.stream()).toList())
         .stream()
         .map(Elf::calories)
         .max(Comparator.naturalOrder())
