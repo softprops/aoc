@@ -7,7 +7,6 @@ import static java.lang.Integer.parseInt;
 import static java.util.stream.Stream.concat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -66,8 +65,8 @@ class Day1Test {
                 },
             (prev, next) -> concat(prev.stream(), next.stream()).toList())
         .stream()
-        .map(Elf::calories)
-        .max(Comparator.naturalOrder())
+        .mapToInt(Elf::calories)
+        .max()
         .orElse(0);
   }
 
