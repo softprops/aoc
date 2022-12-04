@@ -13,7 +13,7 @@ subprojects {
   }
 
   tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs.addAll(arrayOf("-deprecation", "--enable-preview"))
+    options.compilerArgs.addAll(arrayOf("-Xlint", "-Xlint:-preview", "--enable-preview"))
     options.isFork = true
   }
 
