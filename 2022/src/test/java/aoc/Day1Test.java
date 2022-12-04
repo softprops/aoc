@@ -53,29 +53,30 @@ class Day1Test {
             71_780));
   }
 
+  int solve(Stream<String> lines) {
+    return lines
+        .reduce(
+            List.of(new Elf()),
+            (elves, line) ->
+                switch (line) {
+                  case "" -> concat(Stream.of(new Elf()), elves.stream()).toList();
+                  case String s -> concat(
+                          Stream.of(elves.get(0).add(parseInt(s))), elves.stream().skip(1))
+                      .toList();
+                },
+            (prev, next) -> {
+              System.out.println("merge " + prev + " and  " + next);
+              return concat(prev.stream(), next.stream()).toList();
+            })
+        .stream()
+        .map(Elf::calories)
+        .max(Comparator.naturalOrder())
+        .orElse(0);
+  }
+
   @ParameterizedTest
   @MethodSource("args")
-  void solve(Stream<String> lines, int expected) throws Exception {
-    var actual =
-        lines
-            .reduce(
-                List.of(new Elf()),
-                (elves, line) ->
-                    switch (line) {
-                      case "" -> concat(Stream.of(new Elf()), elves.stream()).toList();
-                      case String s -> concat(
-                              Stream.of(elves.get(0).add(parseInt(s))), elves.stream().skip(1))
-                          .toList();
-                    },
-                (prev, next) -> {
-                  System.out.println("merge " + prev + " and  " + next);
-                  return concat(prev.stream(), next.stream()).toList();
-                })
-            .stream()
-            .map(Elf::calories)
-            .max(Comparator.naturalOrder())
-            .orElse(0);
-    System.out.println("actual " + actual);
-    assertEquals(expected, actual);
+  void test(Stream<String> lines, int expected) throws Exception {
+    assertEquals(expected, solve(lines));
   }
 }
