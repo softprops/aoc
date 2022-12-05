@@ -12,6 +12,47 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /** https://adventofcode.com/2022/day/2 */
 class Day2Test {
+  enum Outcome {
+    LOST(0),
+    DRAW(3),
+    WIN(6);
+    public final int score;
+
+    Outcome(int score) {
+      this.score = score;
+    }
+  }
+
+  enum Move {
+    ROCK(1),
+    PAPER(2),
+    SCISSORS(3);
+    public final int score;
+
+    Move(int score) {
+      this.score = score;
+    }
+
+    static Move fromString(String str) {
+      return switch (str) {
+        case "A", "X" -> ROCK;
+        case "B", "Y" -> PAPER;
+        case "C", "Z" -> SCISSORS;
+        default -> throw new IllegalArgumentException();
+      };
+    }
+
+    Outcome outcome(Move other) {
+      if (this == other) {
+        return Outcome.DRAW;
+      }
+      return switch (this) {
+        case ROCK -> other == Move.SCISSORS ? Outcome.WIN : Outcome.LOST;
+        case PAPER -> other == Move.ROCK ? Outcome.WIN : Outcome.LOST;
+        case SCISSORS -> other == Move.PAPER ? Outcome.WIN : Outcome.LOST;
+      };
+    }
+  }
 
   static Stream<Arguments> args() throws Exception {
     return Stream.of(
@@ -23,16 +64,28 @@ class Day2Test {
             """
                 .replace("\n$", "")
                 .lines(),
-            15));
+            15),
+        Arguments.of(
+            new String(Day1Test.class.getResourceAsStream("/input2.txt").readAllBytes()).lines(),
+            12_772));
   }
 
   int solve(Stream<String> lines) {
-    return 0;
+    return lines.reduce(
+        0,
+        (total, line) -> {
+          var round = line.split(" ");
+          var theirMove = Move.fromString(round[0]);
+          var yourMove = Move.fromString(round[1]);
+          return total + yourMove.outcome(theirMove).score + yourMove.score;
+        },
+        Integer::sum);
   }
 
   @ParameterizedTest
   @MethodSource("args")
   void test(Stream<String> lines, int expected) throws Exception {
-    assertEquals(expected, solve(lines));
+    int actual = solve(lines);
+    assertEquals(expected, actual);
   }
 }
