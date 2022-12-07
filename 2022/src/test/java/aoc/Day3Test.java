@@ -3,8 +3,17 @@
  */
 package aoc;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.IntStream.rangeClosed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -12,6 +21,37 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /** https://adventofcode.com/2022/day/3 */
 class Day3Test {
+  List<String> items =
+      IntStream.concat(rangeClosed('a', 'z'), rangeClosed('A', 'Z'))
+          .mapToObj(c -> String.valueOf((char) c))
+          .collect(toList());
+  Map<String, Integer> priorities =
+      rangeClosed(1, 52)
+          .mapToObj(Integer::valueOf)
+          .collect(toMap(p -> items.get(p - 1), identity()));
+
+  record Rucksack(List<String> compartmentA, List<String> compartmentB) {
+
+    public static Rucksack fromString(String str) {
+      return new Rucksack(
+          str.substring(0, str.length() / 2)
+              .chars()
+              .mapToObj(c -> String.valueOf((char) c))
+              .collect(toList()),
+          str.substring(str.length() / 2, str.length())
+              .chars()
+              .mapToObj(c -> String.valueOf((char) c))
+              .collect(toList()));
+    }
+
+    public Optional<String> duplicate() {
+      var intersect = new HashSet<String>();
+      intersect.addAll(compartmentA);
+      intersect.retainAll(compartmentB);
+      // System.out.println("intersect " + intersect);
+      return intersect.stream().findFirst();
+    }
+  }
 
   static Stream<Arguments> args() throws Exception {
     return Stream.of(
@@ -26,11 +66,18 @@ class Day3Test {
             """
                 .replace("\n$", "")
                 .lines(),
-            15));
+            157),
+        Arguments.of(
+            new String(Day1Test.class.getResourceAsStream("/input3.txt").readAllBytes()).lines(),
+            8_039));
   }
 
   int solve(Stream<String> lines) {
-    return 0;
+    return lines.reduce(
+        0,
+        (total, line) ->
+            total + Rucksack.fromString(line).duplicate().map(priorities::get).orElse(0),
+        Integer::sum);
   }
 
   @ParameterizedTest
