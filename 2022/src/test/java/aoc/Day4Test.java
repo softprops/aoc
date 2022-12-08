@@ -3,8 +3,11 @@
  */
 package aoc;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.temporal.ValueRange;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -12,6 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /** https://adventofcode.com/2022/day/4 */
 class Day4Test {
+  static Pattern SHIFTS = Pattern.compile("(\\d+)-(\\d+),?");
 
   static Stream<Arguments> args() throws Exception {
     return Stream.of(
@@ -26,16 +30,38 @@ class Day4Test {
             """
                 .replace("\n$", "")
                 .lines(),
-            2));
+            2,
+            true));
   }
 
-  int solve(Stream<String> lines) {
-    return 0;
+  int solve(Stream<String> lines, boolean partOne) {
+    return (int)
+        lines
+            .filter(
+                (line) -> {
+                  var shifts =
+                      SHIFTS
+                          .matcher(line)
+                          .results()
+                          .map(
+                              shift ->
+                                  ValueRange.of(
+                                      Long.parseLong(shift.group(1)),
+                                      Long.parseLong(shift.group(2))))
+                          .collect(toList());
+                  var shiftA = shifts.get(0);
+                  var shiftB = shifts.get(1);
+                  return (shiftB.isValidValue(shiftA.getMinimum())
+                          && shiftB.isValidValue(shiftB.getMaximum()))
+                      || (shiftA.isValidValue(shiftB.getMinimum())
+                          && shiftA.isValidValue(shiftB.getMaximum()));
+                })
+            .count();
   }
 
   @ParameterizedTest
   @MethodSource("args")
-  void test(Stream<String> lines, int expected) throws Exception {
-    assertEquals(expected, solve(lines));
+  void test(Stream<String> lines, int expected, boolean partOne) throws Exception {
+    assertEquals(expected, solve(lines, partOne));
   }
 }
