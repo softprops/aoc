@@ -3,6 +3,7 @@
  */
 package aoc;
 
+import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -43,16 +44,20 @@ class Day4Test {
             2-6,4-8"""
                 .lines(),
             4,
+            false),
+        Arguments.of(
+            new String(Day1Test.class.getResourceAsStream("/input4.txt").readAllBytes()).lines(),
+            765,
             false));
   }
 
-  record SectionAsignment(int from, long to) {
+  record SectionAsignment(int from, int to) {
     public boolean contains(SectionAsignment other) {
       return other.from() >= from && other.to() <= to;
     }
 
     public boolean overlaps(SectionAsignment other) {
-      return other.from() >= from || other.to() <= to;
+      return other.to() >= from && other.from() <= to;
     }
   }
 
@@ -68,14 +73,19 @@ class Day4Test {
                           .map(
                               shift ->
                                   new SectionAsignment(
-                                      Integer.parseInt(shift.group(1)),
-                                      Integer.parseInt(shift.group(2))))
+                                      parseInt(shift.group(1)), parseInt(shift.group(2))))
                           .collect(toList());
                   var shiftA = shifts.get(0);
                   var shiftB = shifts.get(1);
+                  if (!partOne) {
+                    if (!shiftA.overlaps(shiftB)) {
+                      System.out.println(
+                          "shift %s and %s do not overlap".formatted(shiftA, shiftB));
+                    }
+                  }
                   return partOne
                       ? shiftA.contains(shiftB) || shiftB.contains(shiftA)
-                      : shiftA.overlaps(shiftB) || shiftB.overlaps(shiftA);
+                      : shiftA.overlaps(shiftB);
                 })
             .count();
   }

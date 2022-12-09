@@ -3,15 +3,22 @@
  */
 package aoc;
 
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Stream.concat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
+import java.util.Stack;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-/** https://adventofcode.com/2022/day/4 */
+/** https://adventofcode.com/2022/day/6 */
 class Day5Test {
+  private static final Pattern CRATE = Pattern.compile("\\[(\\S)\\]");
+  private static final Pattern INSTRUCTION = Pattern.compile("move (\\d+) from (\\d+) to (\\d+)");
 
   static Stream<Arguments> args() throws Exception {
     return Stream.of(
@@ -25,20 +32,27 @@ class Day5Test {
             move 1 from 2 to 1
             move 3 from 1 to 3
             move 2 from 2 to 1
-            move 1 from 1 to 2
-            """
-                .replace("\n$", "")
+            move 1 from 1 to 2"""
                 .lines(),
-            2));
+            "CMZ",
+            true));
   }
 
-  int solve(Stream<String> lines) {
-    return 0;
+  String solve(Stream<String> lines, boolean partOne) {
+    var results =
+        lines.reduce(
+            List.<Stack<String>>of(),
+            (stacks, line) -> {
+              // CRATE.matcher(line).results().forEach(res -> System.out.println(res.group(0)));
+              return stacks;
+            },
+            (prev, next) -> concat(prev.stream(), next.stream()).toList());
+    return results.stream().map(Stack::pop).collect(joining());
   }
 
   @ParameterizedTest
   @MethodSource("args")
-  void test(Stream<String> lines, int expected) throws Exception {
-    assertEquals(expected, solve(lines));
+  void test(Stream<String> lines, String expected, boolean partOne) throws Exception {
+    assertEquals(expected, solve(lines, partOne));
   }
 }
