@@ -4,11 +4,12 @@
 package aoc;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.ArrayDeque;
 import java.util.List;
-import java.util.Stack;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,6 +20,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 class Day5Test {
   private static final Pattern CRATE = Pattern.compile("\\[(\\S)\\]");
   private static final Pattern INSTRUCTION = Pattern.compile("move (\\d+) from (\\d+) to (\\d+)");
+
+  record Crate(String label) {}
 
   static Stream<Arguments> args() throws Exception {
     return Stream.of(
@@ -41,13 +44,19 @@ class Day5Test {
   String solve(Stream<String> lines, boolean partOne) {
     var results =
         lines.reduce(
-            List.<Stack<String>>of(),
+            List.<ArrayDeque<String>>of(),
             (stacks, line) -> {
-              // CRATE.matcher(line).results().forEach(res -> System.out.println(res.group(0)));
+              var crates =
+                  CRATE
+                      .matcher(line)
+                      .results()
+                      .map(res -> new Crate(res.group(0)))
+                      .collect(toList());
+
               return stacks;
             },
             (prev, next) -> concat(prev.stream(), next.stream()).toList());
-    return results.stream().map(Stack::pop).collect(joining());
+    return results.stream().map(ArrayDeque::pop).collect(joining());
   }
 
   @ParameterizedTest
