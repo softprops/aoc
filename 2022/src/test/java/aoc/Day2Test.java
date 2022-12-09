@@ -81,30 +81,18 @@ class Day2Test {
 
   static Stream<Arguments> args() throws Exception {
     return Stream.of(
-        Arguments.of(
-            """
+        Arguments.of("""
             A Y
             B X
-            C Z
-            """
-                .replace("\n$", "")
-                .lines(),
-            15,
-            true),
+            C Z""".lines(), 15, true),
         Arguments.of(
             new String(Day1Test.class.getResourceAsStream("/input2.txt").readAllBytes()).lines(),
             12_772,
             true),
-        Arguments.of(
-            """
+        Arguments.of("""
             A Y
             B X
-            C Z
-            """
-                .replace("\n$", "")
-                .lines(),
-            12,
-            false),
+            C Z""".lines(), 12, false),
         Arguments.of(
             new String(Day1Test.class.getResourceAsStream("/input2.txt").readAllBytes()).lines(),
             11_618,

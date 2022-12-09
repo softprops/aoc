@@ -6,7 +6,6 @@ package aoc;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.temporal.ValueRange;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,7 +14,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /** https://adventofcode.com/2022/day/4 */
 class Day4Test {
-  static Pattern SHIFTS = Pattern.compile("(\\d+)-(\\d+),?");
+  static Pattern RANGE = Pattern.compile("(\\d+)-(\\d+),?");
 
   static Stream<Arguments> args() throws Exception {
     return Stream.of(
@@ -26,12 +25,35 @@ class Day4Test {
             5-7,7-9
             2-8,3-7
             6-6,4-6
-            2-6,4-8
-            """
-                .replace("\n$", "")
+            2-6,4-8"""
                 .lines(),
             2,
-            true));
+            true),
+        Arguments.of(
+            new String(Day1Test.class.getResourceAsStream("/input4.txt").readAllBytes()).lines(),
+            605,
+            true),
+        Arguments.of(
+            """
+            2-4,6-8
+            2-3,4-5
+            5-7,7-9
+            2-8,3-7
+            6-6,4-6
+            2-6,4-8"""
+                .lines(),
+            4,
+            false));
+  }
+
+  record SectionAsignment(int from, long to) {
+    public boolean contains(SectionAsignment other) {
+      return other.from() >= from && other.to() <= to;
+    }
+
+    public boolean overlaps(SectionAsignment other) {
+      return other.from() >= from || other.to() <= to;
+    }
   }
 
   int solve(Stream<String> lines, boolean partOne) {
@@ -40,21 +62,20 @@ class Day4Test {
             .filter(
                 (line) -> {
                   var shifts =
-                      SHIFTS
+                      RANGE
                           .matcher(line)
                           .results()
                           .map(
                               shift ->
-                                  ValueRange.of(
-                                      Long.parseLong(shift.group(1)),
-                                      Long.parseLong(shift.group(2))))
+                                  new SectionAsignment(
+                                      Integer.parseInt(shift.group(1)),
+                                      Integer.parseInt(shift.group(2))))
                           .collect(toList());
                   var shiftA = shifts.get(0);
                   var shiftB = shifts.get(1);
-                  return (shiftB.isValidValue(shiftA.getMinimum())
-                          && shiftB.isValidValue(shiftB.getMaximum()))
-                      || (shiftA.isValidValue(shiftB.getMinimum())
-                          && shiftA.isValidValue(shiftB.getMaximum()));
+                  return partOne
+                      ? shiftA.contains(shiftB) || shiftB.contains(shiftA)
+                      : shiftA.overlaps(shiftB) || shiftB.overlaps(shiftA);
                 })
             .count();
   }

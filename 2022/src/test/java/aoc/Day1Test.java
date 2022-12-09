@@ -43,9 +43,7 @@ class Day1Test {
             8000
             9000
 
-            10000
-            """
-                .replace("\n$", "")
+            10000"""
                 .lines(),
             24_000,
             true),
@@ -68,9 +66,7 @@ class Day1Test {
               8000
               9000
 
-              10000
-              """
-                .replace("\n$", "")
+              10000"""
                 .lines(),
             45_000,
             false),

@@ -61,9 +61,7 @@ class Day3Test {
             PmmdzqPrVvPwwTWBwg
             wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
             ttgJtRGJQctTZtZT
-            CrZsJsPPZsGzwwsLwLmpwMDw
-            """
-                .replace("\n$", "")
+            CrZsJsPPZsGzwwsLwLmpwMDw"""
                 .lines(),
             157,
             true),
@@ -78,9 +76,7 @@ class Day3Test {
               PmmdzqPrVvPwwTWBwg
               wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
               ttgJtRGJQctTZtZT
-              CrZsJsPPZsGzwwsLwLmpwMDw
-              """
-                .replace("\n$", "")
+              CrZsJsPPZsGzwwsLwLmpwMDw"""
                 .lines(),
             70,
             false),
