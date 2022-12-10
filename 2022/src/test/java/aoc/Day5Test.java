@@ -4,12 +4,16 @@
 package aoc;
 
 import static java.lang.Integer.parseInt;
+import static java.util.Collections.reverse;
+import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,7 +22,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /** https://adventofcode.com/2022/day/5 */
 class Day5Test {
-  private static final Pattern CRATE = Pattern.compile("\\[(\\S)\\]");
+  private static final Pattern CRATE_SLOT = Pattern.compile("([\\s]{3}|\\[(\\S)\\])\\s?");
   private static final Pattern INSTRUCTION = Pattern.compile("move (\\d+) from (\\d+) to (\\d+)");
 
   record Crate(String label) {}
@@ -38,7 +42,29 @@ class Day5Test {
             move 1 from 1 to 2"""
                 .lines(),
             "CMZ",
-            true));
+            true),
+        Arguments.of(
+            new String(Day1Test.class.getResourceAsStream("/input5.txt").readAllBytes()).lines(),
+            "BWNCQRMDB",
+            true),
+        Arguments.of(
+            """
+                  [D]
+              [N] [C]
+              [Z] [M] [P]
+               1   2   3
+
+              move 1 from 2 to 1
+              move 3 from 1 to 3
+              move 2 from 2 to 1
+              move 1 from 1 to 2"""
+                .lines(),
+            "MCD",
+            false),
+        Arguments.of(
+            new String(Day1Test.class.getResourceAsStream("/input5.txt").readAllBytes()).lines(),
+            "NHWZCBNBF",
+            false));
   }
 
   String solve(Stream<String> lines, boolean partOne) {
@@ -47,51 +73,53 @@ class Day5Test {
             new ArrayList<ArrayDeque<Crate>>(),
             (stacks, line) -> {
               // if this is a crate line, pack the stacks
-              CRATE
+              // every slot is either Optional.empty() or Optional.of(new Crate(label))
+              CRATE_SLOT
                   .matcher(line)
                   .results()
-                  .map(res -> new Crate(res.group(0)))
+                  .map(res -> Optional.ofNullable(res.group(2)).map(Crate::new))
                   .reduce(
                       0,
-                      (index, crate) -> {
-                        System.out.println("populating stack at " + index + " with crate " + crate);
-                        if (stacks.size() > index) {
-                          stacks.get(index).addFirst(crate);
-                        } else {
-                          var deq = new ArrayDeque<Crate>();
-                          deq.addFirst(crate);
-                          stacks.add(deq);
+                      (index, slot) -> {
+                        if (stacks.size() <= index) {
+                          stacks.add(new ArrayDeque<Crate>());
                         }
+                        slot.ifPresent(stacks.get(index)::addFirst);
                         return index + 1;
                       },
                       Integer::sum);
-              // if this is an instruction line, instruct
+
+              // if this is an instruction line, follow instruction
               INSTRUCTION
                   .matcher(line)
                   .results()
                   .forEach(
                       res -> {
-                        System.out.println(
-                            "mv "
-                                + parseInt(res.group(1))
-                                + " "
-                                + res.group(2)
-                                + " "
-                                + res.group(3));
-                        range(0, parseInt(res.group(1)))
-                            .forEach(
-                                num -> {
-                                  System.out.println("all stacks " + stacks);
-                                  var src = stacks.get(parseInt(res.group(2)) - 1);
-                                  var dest = stacks.get(parseInt(res.group(3)) - 1);
-                                  System.out.println("src " + src + " dest " + dest);
-                                  var crate = src.pop();
-                                  dest.addLast(crate);
-                                });
+                        var numCrates = parseInt(res.group(1));
+                        var src = stacks.get(parseInt(res.group(2)) - 1);
+                        var dest = stacks.get(parseInt(res.group(3)) - 1);
+                        var crates = range(0, numCrates).mapToObj(ignore -> src.removeLast());
+                        if (partOne) {
+                          // as is then move
+                          crates.forEach(dest::addLast);
+                        } else {
+                          // reverse then move
+                          crates
+                              .collect(
+                                  collectingAndThen(
+                                      toList(),
+                                      l -> {
+                                        reverse(l);
+                                        return l;
+                                      }))
+                              .stream()
+                              .forEach(dest::addLast);
+                        }
                       });
               return stacks;
             },
             (prev, next) -> next);
+
     return results.stream().map(ArrayDeque::getLast).map(Crate::label).collect(joining());
   }
 
