@@ -3,20 +3,20 @@
  */
 package aoc;
 
+import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Stream.concat;
+import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayDeque;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-/** https://adventofcode.com/2022/day/6 */
+/** https://adventofcode.com/2022/day/5 */
 class Day5Test {
   private static final Pattern CRATE = Pattern.compile("\\[(\\S)\\]");
   private static final Pattern INSTRUCTION = Pattern.compile("move (\\d+) from (\\d+) to (\\d+)");
@@ -27,7 +27,7 @@ class Day5Test {
     return Stream.of(
         Arguments.of(
             """
-            [D]
+                [D]
             [N] [C]
             [Z] [M] [P]
              1   2   3
@@ -44,19 +44,55 @@ class Day5Test {
   String solve(Stream<String> lines, boolean partOne) {
     var results =
         lines.reduce(
-            List.<ArrayDeque<String>>of(),
+            new ArrayList<ArrayDeque<Crate>>(),
             (stacks, line) -> {
-              var crates =
-                  CRATE
-                      .matcher(line)
-                      .results()
-                      .map(res -> new Crate(res.group(0)))
-                      .collect(toList());
-
+              // if this is a crate line, pack the stacks
+              CRATE
+                  .matcher(line)
+                  .results()
+                  .map(res -> new Crate(res.group(0)))
+                  .reduce(
+                      0,
+                      (index, crate) -> {
+                        System.out.println("populating stack at " + index + " with crate " + crate);
+                        if (stacks.size() > index) {
+                          stacks.get(index).addFirst(crate);
+                        } else {
+                          var deq = new ArrayDeque<Crate>();
+                          deq.addFirst(crate);
+                          stacks.add(deq);
+                        }
+                        return index + 1;
+                      },
+                      Integer::sum);
+              // if this is an instruction line, instruct
+              INSTRUCTION
+                  .matcher(line)
+                  .results()
+                  .forEach(
+                      res -> {
+                        System.out.println(
+                            "mv "
+                                + parseInt(res.group(1))
+                                + " "
+                                + res.group(2)
+                                + " "
+                                + res.group(3));
+                        range(0, parseInt(res.group(1)))
+                            .forEach(
+                                num -> {
+                                  System.out.println("all stacks " + stacks);
+                                  var src = stacks.get(parseInt(res.group(2)) - 1);
+                                  var dest = stacks.get(parseInt(res.group(3)) - 1);
+                                  System.out.println("src " + src + " dest " + dest);
+                                  var crate = src.pop();
+                                  dest.addLast(crate);
+                                });
+                      });
               return stacks;
             },
-            (prev, next) -> concat(prev.stream(), next.stream()).toList());
-    return results.stream().map(ArrayDeque::pop).collect(joining());
+            (prev, next) -> next);
+    return results.stream().map(ArrayDeque::getLast).map(Crate::label).collect(joining());
   }
 
   @ParameterizedTest

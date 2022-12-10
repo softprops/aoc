@@ -77,12 +77,6 @@ class Day4Test {
                           .collect(toList());
                   var shiftA = shifts.get(0);
                   var shiftB = shifts.get(1);
-                  if (!partOne) {
-                    if (!shiftA.overlaps(shiftB)) {
-                      System.out.println(
-                          "shift %s and %s do not overlap".formatted(shiftA, shiftB));
-                    }
-                  }
                   return partOne
                       ? shiftA.contains(shiftB) || shiftB.contains(shiftA)
                       : shiftA.overlaps(shiftB);
