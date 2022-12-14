@@ -6,6 +6,7 @@ package aoc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -51,7 +52,7 @@ class Day6Test {
     }
 
     boolean packetMarker() {
-      return data.stream().mapToInt(Integer::intValue).distinct().count() == uniqueCount;
+      return new HashSet<>(data).size() == uniqueCount;
     }
   }
 
