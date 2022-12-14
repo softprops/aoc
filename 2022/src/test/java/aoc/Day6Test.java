@@ -57,16 +57,12 @@ class Day6Test {
 
   int solve(String line, boolean partOne) {
     // find the index of first occurance of 4 unique chars
-    var result =
-        line.chars()
-            .boxed()
-            // would be nice to short circuit after detecting index. how would we do that
-            // using reduce :thinkingface:
-            .reduce(
-                new Buffer(partOne ? 4 : 14),
-                (buf, elem) -> buf.packetMarker() ? buf : buf.append(elem),
-                (prev, next) -> next);
-    return result.index();
+    var iter = line.chars().boxed().iterator();
+    return Stream.iterate(new Buffer(partOne ? 4 : 14), buf -> buf.append(iter.next()))
+        .filter(Buffer::packetMarker)
+        .findFirst()
+        .map(Buffer::index)
+        .orElse(0);
   }
 
   @ParameterizedTest
